@@ -433,7 +433,13 @@ class TermoGuaraApp(ctk.CTk):
         self.save_button.pack_forget()
         self.stop_button.pack(side="left", expand=True, fill="x", padx=5)
 
-        self.status_label.configure(text="Gravando dados...", text_color="#00E676")
+        self.status_label.configure(text="Gravando dados e aquecendo...", text_color="#00E676")
+
+        # --> ADICIONE ESTA VERIFICAÇÃO PARA LIGAR AS CHAPAS <--
+        if self.ser and self.ser.is_open:
+            self.ser.write(b'ON\n')
+            time.sleep(0.1) # Breve pausa para o Arduino processar
+            self.ser.reset_input_buffer()
 
         self.serial_thread = threading.Thread(target=self.read_serial, daemon=True)
         self.serial_thread.start()
@@ -492,6 +498,11 @@ class TermoGuaraApp(ctk.CTk):
         self.recording = False
         self.stop_button.pack_forget()
         self.play_button.pack(side="left", expand=True, fill="x", padx=5)
+        
+        # --> ADICIONE ESTA VERIFICAÇÃO PARA DESLIGAR AS CHAPAS <--
+        if self.ser and self.ser.is_open:
+            self.ser.write(b'OFF\n')
+            time.sleep(0.1)
 
     def analysis_completed(self):
         self.stop_recording()
